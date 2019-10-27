@@ -1,0 +1,116 @@
+#include <iostream>
+#include <queue>
+#include <stack>
+
+using namespace std;
+
+int maxx = 0;
+/*使用全局队列存储叶子节点的数据*/
+queue<int> Q;
+void get_weight() {
+    int t, n;
+    cin >> t;
+    for (int i = 0; i < t; ++i) {
+        cin >> n;
+        Q.push(n);
+    }
+}
+
+struct BiNode {
+    char data;
+    int weight;
+    BiNode *lchild, *rchild, *parents;
+
+    BiNode() : data(0), lchild(nullptr), rchild(nullptr), weight(0), parents(nullptr) {}
+
+    explicit BiNode(char d) : data(d), lchild(nullptr), rchild(nullptr), weight(0), parents(nullptr) {}
+};
+
+/*使用结构体，所有数据可以直接访问*/
+class BiTree {
+    BiNode *root;
+
+    BiNode *creat_tree_no_ar(BiNode *pa);
+
+    void sumWeight(BiNode *p);
+
+public:
+    BiTree() : root(nullptr) {}
+
+    void createTree() {
+        root = new BiNode;
+        /*缺省建树 返回值是关键*/
+        root = creat_tree_no_ar(nullptr);
+        get_weight();
+        ini_weight(root);
+    }
+
+    void ini_weight(BiNode *p);
+
+    void getSumWeight() { sumWeight(root); cout<<maxx<<endl;}
+};
+
+BiNode *BiTree::creat_tree_no_ar(BiNode *pa) {
+    char c;
+    auto *p = new BiNode;
+    if (cin >> c) {
+        if (c == '0') {
+            return nullptr;
+        } else {
+            p = new BiNode(c);
+            p->parents = pa;
+            p->lchild = creat_tree_no_ar(p);
+            p->rchild = creat_tree_no_ar(p);
+        }
+    }
+    return p;
+}
+
+void BiTree::ini_weight(BiNode *p) {
+    if (p == nullptr) {
+        return;
+    } else {
+        if (p->data >= 'A' && p->data <= 'Z') {
+            if (!Q.empty()) {
+                p->weight = Q.front();
+                Q.pop();
+            }
+        }
+        ini_weight(p->lchild);
+        ini_weight(p->rchild);
+    }
+}
+
+void BiTree::sumWeight(BiNode *p) {
+    if (p == nullptr) {
+        return;
+    } else {
+        if (!p->lchild && !p->rchild) {
+            int road = 0;
+            BiNode *q = p;
+            while (q->parents) {
+                road += q->weight;
+                q = q->parents;
+            }
+            road += q->weight;
+            if (maxx < road) {
+                maxx = road;
+            }
+        } else {
+            sumWeight(p->lchild);
+            sumWeight(p->rchild);
+        }
+    }
+}
+
+int main() {
+    int t;
+    cin >> t;
+    while (t--) {
+        maxx = 0;
+        BiTree biTree;
+        biTree.createTree();
+        biTree.getSumWeight();
+    }
+    return 0;
+}
