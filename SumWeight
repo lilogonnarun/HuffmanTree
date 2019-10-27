@@ -1,0 +1,120 @@
+#include <iostream>
+#include <queue>
+#include <stack>
+
+using namespace std;
+queue<int> Q;
+int sum = 0;
+
+struct BiNode {
+    char data;
+    int weight;
+    BiNode *lchild, *rchild, *parents{};
+
+    BiNode() : data(0), lchild(nullptr), rchild(nullptr), weight(0), parents(nullptr) {}
+
+    explicit BiNode(char d) : data(d), lchild(nullptr), rchild(nullptr), weight(0), parents(nullptr) {}
+};
+
+class BiTree {
+    BiNode *root;
+
+    BiNode *creat_tree_no_ar(BiNode *pa);
+
+    void ini_weight();
+
+    int SumWeight(BiNode *p);
+
+public:
+    BiTree() : root(nullptr) {}
+
+    void frontTraverse(BiNode *p);
+
+    BiNode *createTree() {
+        root = new BiNode;
+        root = creat_tree_no_ar(nullptr);
+        ini_weight();
+        frontTraverse(root);
+    }
+
+    void tailTraverse(BiNode *p);
+
+    void getSumWeight() { SumWeight(root); }
+};
+
+BiNode *BiTree::creat_tree_no_ar(BiNode *pa) {
+    char c;
+    auto *p = new BiNode;
+    if (cin >> c) {
+        if (c == '0') {
+            return nullptr;
+        } else {
+            p = new BiNode(c);
+            p->parents = pa;
+            p->lchild = creat_tree_no_ar(p);
+            p->rchild = creat_tree_no_ar(p);
+        }
+    }
+    return p;
+}
+
+void BiTree::frontTraverse(BiNode *p) {
+    if (p == nullptr) {
+        return;
+    } else {
+        if (p->data >= 'A' && p->data <= 'Z') {
+            if (!Q.empty()) {
+                p->weight = Q.front();
+                Q.pop();
+            }
+        }
+        frontTraverse(p->lchild);
+        frontTraverse(p->rchild);
+    }
+}
+
+void BiTree::tailTraverse(BiNode *p) {
+    if (p == nullptr) {
+        return;
+    } else {
+        if (!p->lchild && !p->rchild) {
+            int road = 0;
+            BiNode *q = p;
+            while (q->parents) {
+                road++;
+                q = q->parents;
+            }
+            sum += road * p->weight;
+        } else {
+            tailTraverse(p->lchild);
+            tailTraverse(p->rchild);
+        }
+    }
+}
+
+void BiTree::ini_weight() {
+    int t, n;
+    cin >> t;
+    for (int i = 0; i < t; ++i) {
+        cin >> n;
+        Q.push(n);
+    }
+
+}
+
+int BiTree::SumWeight(BiNode *p) {
+    tailTraverse(p);
+    cout << sum << endl;
+}
+
+int main() {
+    int t;
+    cin >> t;
+    while (t--) {
+        sum = 0;
+        BiTree biTree;
+        biTree.createTree();
+        biTree.getSumWeight();
+    }
+    return 0;
+}
